@@ -1,30 +1,22 @@
-﻿using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using NReco.VideoConverter;
+﻿using System.Globalization;
+using System.Text;
 using YoutubeExplode;
-using YoutubeExplode.Videos.Streams;
 using YoutubeExplode.Playlists;
+using YoutubeExplode.Videos.Streams;
 
 namespace Youtube.Video.Downloader
 {
     public partial class Fo_Principal : Form
     {
-        public IConfiguration _config;
-        public string chaveapi = "0";
-        public string hostapi = "0";
         public Fo_Principal()
         {
             InitializeComponent();
-            #region Configuração JSON (API QUE NÃO É MAIS UTILIZADA)
-            _config = new ConfigurationBuilder()
-                .AddJsonFile("AppSettings.json")
-                .Build();
-            #endregion
         }
+        int musicasBaixadas = 0;
         int i = 1;
-        public int j = 1;
         private string LimparNomeParaArquivo(string nome)
         {
+            nome = nome.Normalize(NormalizationForm.FormC);
             foreach (char c in Path.GetInvalidFileNameChars())
             {
                 nome = nome.Replace(c, '-');
@@ -33,6 +25,7 @@ namespace Youtube.Video.Downloader
         }
         private bool ExisteInformacaoNoGrid(string link)
         {
+            link = link.Replace("https://www.youtube.com/watch?v=", "");
             foreach (DataGridViewRow row in Grid_musicas.Rows)
             {
                 foreach (DataGridViewCell cell in row.Cells)
@@ -52,6 +45,8 @@ namespace Youtube.Video.Downloader
                 MessageBox.Show("Lista de musicas para download vazia!", "AVISO", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
+            int totalMusicas = Grid_musicas.Rows.Count;
+            int musicasBaixadas = 0;
             foreach (DataGridViewRow item in Grid_musicas.Rows)
             {
                 var nome = item.Cells[1].Value.ToString();
@@ -60,261 +55,112 @@ namespace Youtube.Video.Downloader
                 try
                 {
                     var youtube = new YoutubeClient();
-                    //obtem video youtube//
                     var video = await youtube.Videos.GetAsync(link);
                     var manifestvideo = await youtube.Videos.Streams.GetManifestAsync(video.Id);
                     var nomemusic = LimparNomeParaArquivo(video.Title);
-                    //verifica se o arquivo existe//
                     string diretoriodownload = Application.StartupPath + @"Musicas\";
-                    //verifica se a musica já foi baixada//
-                    if (System.IO.File.Exists(diretoriodownload + $"{nomemusic}.mp3"))
+                    var localdownload = Path.Combine(diretoriodownload, $"{nomemusic}.mp3");
+                    if (System.IO.File.Exists(localdownload))
                     {
-                        MessageBox.Show("Música já baixada!!", "AVISO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("Música já baixada!", "AVISO", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         Grid_musicas.Rows.Remove(item);
+                        AtualizarBarraDeProgresso(musicasBaixadas);
+                        continue;
                     }
-                    //seleciona qualidade máxima para Dowload//
                     var infovideo = manifestvideo.GetAudioOnlyStreams().GetWithHighestBitrate();
                     var localarquivo = Path.Combine(Path.GetTempPath(), $"{nomemusic}.mp3");
-                    //faz download audio//
                     await youtube.Videos.Streams.DownloadAsync(infovideo, localarquivo);
-                    //converte para MP3//
-                    var ffmpeg = new FFMpegConverter();
                     var arquivomp3 = Path.Combine(Path.GetTempPath(), $"{nomemusic}.mp3");
-                    //cria a pasta Musicas caso não exista//
                     if (!Directory.Exists("Musicas"))
                     {
-                        //cria a pasta Musicas no local do executavel//
                         Directory.CreateDirectory("Musicas");
                     }
-                    //Move a música dos arquivos temporarios para a pasta Musicas no local do Executavel//
                     string outputfile = $"{diretoriodownload}" + $"{nomemusic}.mp3";
                     System.IO.File.Move(arquivomp3, outputfile);
+                    musicasBaixadas++;
+                    AtualizarBarraDeProgresso(musicasBaixadas);
+                    lbl_baixadas.Text = Convert.ToString(musicasBaixadas);
+                    item.Cells[5].Value = true;
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Erro: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
+                    if (ex.Message.Contains("429"))
+                    {
+                        MessageBox.Show("Erro 429 - Limite de requisições atingido!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                    var result = MessageBox.Show("Deseja continuar?", "Erro", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (result == DialogResult.No)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        continue;
+                    }
                 }
             }
-            MessageBox.Show("Download Finalizzado com sucesso!", "Sucesso!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (Grid_musicas.Rows.Count == 0)
+            {
+                MessageBox.Show("Playlist já baixada!", "Aviso!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("Download Finalizado com sucesso!", "Sucesso!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            Grid_musicas.Rows.Clear();
             Pbar.Value = 0;
             i = 0;
-            j = 0;
-            Grid_musicas.Rows.Clear();
+            musicasBaixadas = 0;
         }
-        #region Configurações da API antiga (ESTÁ FUNCÃO É MAIS USADA)
-        //if (cbx_chave.SelectedIndex == -1)
-        //{
-        //    MessageBox.Show("Selecione uma ChaveAPI", "AVISO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        //    return;
-        //}
-        //else if (cbx_chave.SelectedIndex == 0)
-        //{
-        //    chaveapi = _config["ChaveApi:X-RapidAPI-Key1"];
-        //}
-        //else if (cbx_chave.SelectedIndex == 1)
-        //{
-        //    chaveapi = _config["ChaveApi:X-RapidAPI-Key2"];
-        //}
-        //else
-        //{
-        //    chaveapi = _config["ChaveApi:X-RapidAPI-Key3"];
-        //}
-        /////////////////////////////Verifica qual a Host da API esta selecionada//////////////////////////////////
-        //if (cbx_host.SelectedIndex == -1)
-        //{
-        //    MessageBox.Show("Selecione um HostAPI!", "AVISO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        //    return;
-        //}
-        //else if (cbx_host.SelectedIndex == 0)
-        //{
-        //    hostapi = _config["HostApi:X-RapidAPI-Host1"];
-        //}
-        //else
-        //{
-        //    hostapi = _config["HostApi:X-RapidAPI-Host2"];
-        //}
-        //foreach (DataGridViewRow item in Grid_musicas.Rows)
-        //{
-        //    string nome = item.Cells[1].Value.ToString();
-        //    string _id_video = item.Cells[2].Value.ToString();
-        //    string nome_limpo = LimparNomeParaArquivo(nome);
-        //    string uri;
-        //    var client = new HttpClient();
-        //    //////////Verifica qual a chave da API e dependendo altera a URI que faz a requisição///////////////
-        //    if (hostapi == "youtube-mp3-downloader2.p.rapidapi.com")
-        //    {
-        //        uri = ("https://youtube-mp3-downloader2.p.rapidapi.com/ytmp3/ytmp3/?url=" + _id_video);
-        //    }
-        //    else
-        //    {
-        //        uri = ("https://youtube-mp3-download1.p.rapidapi.com/dl?id=" + _id_video);
-        //    }
-        //    var request = new HttpRequestMessage
-        //    {
-        //        Method = HttpMethod.Get,
-        //        RequestUri = new Uri(uri),
-        //        Headers =
-        //        {
-        //        { "X-RapidAPI-Key", chaveapi },
-        //        { "X-RapidAPI-Host", hostapi },
-        //        },
-        //    };
-        //    try
-        //    {
-        //        using var response = await client.SendAsync(request);
-        //        response.EnsureSuccessStatusCode();
-        //        var responsebody = await response.Content.ReadAsStringAsync();
-        //        dynamic jsonresponse = JsonConvert.DeserializeObject<dynamic>(responsebody);
-        //        /////////////////Verifica qual a chave da API e qual ação deve fazer///////////////
-        //        if (hostapi == "youtube-mp3-downloader2.p.rapidapi.com")
-        //        {
-        //            string urlaudio = jsonresponse.dlink;
-        //            using var httpClient = new HttpClient();
-        //            {
-        //                var audiolink = await httpClient.GetByteArrayAsync(urlaudio);
-        //                if (!Directory.Exists("Musicas"))
-        //                {
-        //                    Directory.CreateDirectory("Musicas");
-        //                }
-        //                using (var arquivoaudio = System.IO.File.Create("Musicas/" + nome_limpo + ".mp3"))
-        //                {
-        //                    await arquivoaudio.WriteAsync(audiolink);
-        //                    System.Threading.Thread.Sleep(500);
-        //                }
-        //                Barradeprogresso();
-        //            }
-        //        }
-        //        //////////////////API que faz o download do video abrindo o Chrome e clicando no botão download////////////////////////
-        //        else
-        //        {
-        //            var options = new ChromeOptions();
-        //            if (!Directory.Exists("Musicas"))
-        //            {
-        //                Directory.CreateDirectory("Musicas");
-        //            }
-        //            string diretoriodownload = @"C:\Users\Gabriel\Desktop\Projeto orçamento C#\Youtube.Video.Downloader\Musicas";
-        //            options.AddUserProfilePreference("download.default_directory", diretoriodownload);
-        //            string linkdownload = jsonresponse.link;
-        //            using (var driver = new ChromeDriver())
-        //            {
-        //                driver.Navigate().GoToUrl(linkdownload);
-        //                var dowloadbutton = driver.FindElement(By.ClassName("dlbtn"));
-        //                System.Threading.Thread.Sleep(1500);
-        //                dowloadbutton.Click();
-        //                System.Threading.Thread.Sleep(2500);
-        //            }
-        //            Barradeprogresso();
-        //        }
-        //    }
-        //    catch (HttpRequestException ex)
-        //    {
-        //        MessageBox.Show($"Erro na requisição: {ex.Message}");
-        //        Console.WriteLine($"Erro na requisição: {ex.Message}");
-        //        return;
-        //    }
-        //}
-        //MessageBox.Show("Downloads finalizados com sucesso!");
-        //Console.WriteLine("Downloads finalizados com sucesso!");
-        #endregion
         private async void btn_addlist_Click(object sender, EventArgs e)
         {
-            #region Metodo de consulta utilizando API (LIMITADO) NÃO É MAIS UTILIZADO
-            ///////////////////////////Verifica qual a chave da API esta selecionada//////////////////////////////////
-            //if (cbx_chave.SelectedIndex == -1)
-            //{
-            //    MessageBox.Show("Selecione uma ChaveAPI", "AVISO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            //    return;
-            //}
-            //if (cbx_chave.SelectedIndex == 0)
-            //{
-            //    chaveapi = _config["ChaveApi:X-RapidAPI-Key1"];
-            //}
-            //else if (cbx_chave.SelectedIndex == 1)
-            //{
-            //    chaveapi = _config["ChaveApi:X-RapidAPI-Key2"];
-            //}
-            //else
-            //{
-            //    chaveapi = _config["ChaveApi:X-RapidAPI-Key3"];
-            //}
-            ///////////////////////////Verifica qual a Host da API esta selecionada//////////////////////////////////
-            //if (cbx_host.SelectedIndex == -1)
-            //{
-            //    MessageBox.Show("Selecione um HostAPI!", "AVISO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            //    return;
-            //}
-            //if (cbx_host.SelectedIndex == 0)
-            //{
-            //    hostapi = _config["HostApi:X-RapidAPI-Host1"];
-            //}
-            //else
-            //{
-            //    hostapi = _config["HostApi:X-RapidAPI-Host2"];
-            //}
-            #endregion
+            string diretoriodownload = Application.StartupPath + @"Musicas\";
             string link = txt_link.Text;
             if (txt_link.Text == "")
             {
                 MessageBox.Show("Informe um link para poder incluir na lista!", "AVISO", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return;
             }
-            ///////////////////////////////////////Caso seja uma playlist///////////////////////////////////
             if (cbx_playlist.Checked)
+            #region 1 - Caso seja uma playlist 
             {
-                #region Faz a consulta da Playlist via API
-                //string quebrastring = "https://www.youtube.com/playlist?list=";
-                //string id_playlist = link.Replace(quebrastring, "");
-                //var client = new HttpClient();
-                //var request = new HttpRequestMessage
-                //{
-                //    Method = HttpMethod.Get,
-                //    RequestUri = new Uri("https://youtube138.p.rapidapi.com/playlist/videos/?id=" + id_playlist + "&hl=en&gl=US"),
-                //    Headers =
-                //    {
-                //  { "X-RapidAPI-Key", chaveapi },
-                //  { "X-RapidAPI-Host", "youtube138.p.rapidapi.com" },
-                //    },
-                //};
-                #endregion
                 try
                 {
-                    #region Caso seja uma playlist via API pega os dados do json e adiciona na Grid (LIMITE DE 100) NÃO É MAIS UTILIZADO
-                    //using var response = await client.SendAsync(request);
-                    //response.EnsureSuccessStatusCode();
-                    //var body = await response.Content.ReadAsStringAsync();
-                    //var jsonresponse = JsonConvert.DeserializeObject<dynamic>(body);
-                    //foreach (var item in jsonresponse.contents)
-                    //{
-                    //    var id = item.index;
-                    //    string titulo = item.video.title;
-                    //    string _id_video = item.video.videoId;
-                    //    var id_video = "";
-                    //    if (hostapi == "youtube-mp3-download1.p.rapidapi.com")
-                    //    {
-                    //        id_video = item.video.videoId;
-                    //    }
-                    //    //////////////////Monta link para o video e adiciona na lista////////////////////////////
-                    //    else
-                    //    {
-                    //        id_video = "https://www.youtube.com/watch?v=" + _id_video;
-                    //    }
-                    //    var temp_segundos = Convert.ToDouble(item.video.lengthSeconds);
-                    //    var minutos = TimeSpan.FromSeconds(temp_segundos);
-                    #endregion
+                    var id_playlist_link = link.Replace("https://www.youtube.com/playlist?list=", "");
+                    if (ExisteInformacaoNoGrid(id_playlist_link))
+                    {
+                        MessageBox.Show("Playlist já existente na lista!", "AVISO", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        txt_link.Text = "";
+                        cbx_playlist.Checked = false;
+                        return;
+                    }
                     var youtube = new YoutubeClient();
                     await foreach (var video in youtube.Playlists.GetVideosAsync(link))
                     {
                         var id_video = video.Id;
-                        var titulo = video.Title;
+                        var id_playlist = video.PlaylistId;
+                        var titulo = LimparNomeParaArquivo(video.Title);
                         var minutos = video.Duration;
-
-                        Grid_musicas.Rows.Add(i, titulo, id_video, minutos);
-                        txt_link.Text = null;
+                        var localdownload = Path.Combine(diretoriodownload, $"{titulo}.mp3");
+                        if (System.IO.File.Exists(localdownload))
+                        {
+                            continue;
+                        }
+                        Grid_musicas.Rows.Add(i, titulo, id_video, minutos, id_playlist);
                         i++;
-                        j++;
+                        txt_link.Text = null;
+                        cbx_playlist.Checked = false;
+                        lbl_total.Text = Convert.ToString(i);
                     }
-                    //}
+                    if (Grid_musicas.Rows.Count == 0)
+                    {
+                        MessageBox.Show("Todas as músicas desta playlist já estão baixadas!", "AVISO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        txt_link.Text = "";
+                        cbx_playlist.Checked = false;
+                        return;
+                    }
                 }
                 catch (HttpRequestException ex)
                 {
@@ -323,55 +169,37 @@ namespace Youtube.Video.Downloader
                     return;
                 }
             }
-            ////////////////////////////////////Caso não seja uma playlist////////////////////////////////////////////////////////
+            #endregion
             else
+            #region 2- Caso não seja uma playlist
             {
                 #region Faz a consulta via Framework e adiciona no Grid
-                #region Caso seja uma música(CONSULTA VIA API) NÃO É MAIS UTILIZADO
-                //string quebrastring = "https://www.youtube.com/watch?v=";
-                //string id_video = link.Replace(quebrastring, "");
-                //if (ExisteInformacaoNoGrid(id_video) == true)
-                //{
-                //    MessageBox.Show("Link já existente na lista!", "AVISO", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                //    txt_link.Text = "";
-                //    return;
-                //}
-                //var client = new HttpClient();
-                //var request = new HttpRequestMessage
-                //{
-                //    Method = HttpMethod.Get,
-                //    RequestUri = new Uri("https://youtube138.p.rapidapi.com/video/details/?id=" + id_video + "&hl=en&gl=US"),
-                //    Headers =
-                //    {
-                //        { "X-RapidAPI-Key", chaveapi },
-                //        { "X-RapidAPI-Host", "youtube138.p.rapidapi.com" },
-                //    },
-                //};
-                #endregion
                 var youtube = new YoutubeClient();
                 //obtem video youtube//
                 var video = await youtube.Videos.GetAsync(link);
                 //manifesto do video para framework
                 var manifestvideo = await youtube.Videos.Streams.GetManifestAsync(video.Id);
-                string titulo = video.Title;
+                string titulo = LimparNomeParaArquivo(video.Title);
                 string id_video = video.Id;
+                if (ExisteInformacaoNoGrid(id_video))
+                {
+                    MessageBox.Show("Música já existente na lista!", "AVISO", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    txt_link.Text = "";
+                    return;
+                }
                 var minutos = video.Duration;
+                var localdownload = Path.Combine(diretoriodownload, $"{titulo}.mp3");
+                if (System.IO.File.Exists(localdownload) || ExisteInformacaoNoGrid(id_video))
+                {
+                    MessageBox.Show($"{titulo} já baixada!!", "AVISO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    txt_link.Text = "";
+                    return;
+                }
                 try
                 {
-                    #region Tenta fazer a inclusão da musica no Grid via API(CONSULTAS LIMITADAS) NÃO É MAIS UTILIZADO
-                    //using var response = await client.SendAsync(request);
-                    //response.EnsureSuccessStatusCode();
-                    //var body = await response.Content.ReadAsStringAsync();
-                    //var jsonresponse = JsonConvert.DeserializeObject<dynamic>(body);
-                    //string titulojson = jsonresponse.title;
-                    //var titulo = LimparNomeParaArquivo(titulojson);
-                    //var temp_segundos = Convert.ToDouble(jsonresponse.lengthSeconds);
-                    //var minutos = TimeSpan.FromSeconds(temp_segundos);
-                    #endregion
                     Grid_musicas.Rows.Add(i, titulo, id_video, minutos);
                     txt_link.Text = null;
-                    i++;
-                    j++;
+                    lbl_total.Text = Convert.ToString(i);
                 }
                 catch (HttpRequestException ex)
                 {
@@ -381,6 +209,7 @@ namespace Youtube.Video.Downloader
                 }
                 #endregion
             }
+            #endregion
         }
         private void btn_excluir_Click(object sender, EventArgs e)
         {
@@ -390,20 +219,35 @@ namespace Youtube.Video.Downloader
                 {
                     Grid_musicas.Rows.Remove(row);
                     i--;
-                    j--;
+                    lbl_total.Text = Convert.ToString(i);
                 }
             }
         }
-        private void Barradeprogresso()
+        private void AtualizarBarraDeProgresso(int valor)
         {
-            Pbar.Minimum = 0;
-            Pbar.Maximum = j;
-            for (int i = 0; i <= j; i++)
+            if (valor <= Pbar.Maximum)
             {
-                MessageBox.Show(i.ToString());
-                Pbar.Value = i;
-                return;
+                Pbar.Value = valor;
             }
+        }
+        private void txt_link_TextChanged(object sender, EventArgs e)
+        {
+            string link = txt_link.Text;
+            if (link.Contains("https://www.youtube.com/watch?v="))
+            {
+                cbx_playlist.Checked = false;
+            }
+            else if (link.Contains("https://www.youtube.com/playlist?list="))
+            {
+                cbx_playlist.Checked = true;
+            }
+        }
+
+        private void btn_limpar_Click(object sender, EventArgs e)
+        {
+            Grid_musicas.Rows.Clear();
+            i = 0;
+            lbl_total.Text = Convert.ToString(i);
         }
     }
 }

@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Fo_Principal));
             txt_link = new TextBox();
             btn_download = new Button();
@@ -37,29 +38,35 @@
             Titulo = new DataGridViewTextBoxColumn();
             linkorId_video = new DataGridViewTextBoxColumn();
             Tempo = new DataGridViewTextBoxColumn();
+            id_playlist = new DataGridViewTextBoxColumn();
+            baixada = new DataGridViewCheckBoxColumn();
             btn_addlist = new Button();
             btn_excluir = new Button();
             Pbar = new ProgressBar();
             cbx_playlist = new CheckBox();
-            cbx_host = new ComboBox();
-            cbx_chave = new ComboBox();
             label1 = new Label();
+            lbl_total = new Label();
             label2 = new Label();
+            lbl_baixadas = new Label();
+            btn_limpar = new Button();
             ((System.ComponentModel.ISupportInitialize)Grid_musicas).BeginInit();
             SuspendLayout();
             // 
             // txt_link
             // 
+            txt_link.Font = new Font("Segoe UI", 11F);
             txt_link.Location = new Point(12, 4);
             txt_link.Name = "txt_link";
-            txt_link.Size = new Size(657, 23);
+            txt_link.Size = new Size(640, 27);
             txt_link.TabIndex = 0;
+            txt_link.TextChanged += txt_link_TextChanged;
             // 
             // btn_download
             // 
-            btn_download.Location = new Point(12, 493);
+            btn_download.Font = new Font("Segoe UI", 11F);
+            btn_download.Location = new Point(437, 447);
             btn_download.Name = "btn_download";
-            btn_download.Size = new Size(793, 38);
+            btn_download.Size = new Size(368, 38);
             btn_download.TabIndex = 1;
             btn_download.Text = "Download";
             btn_download.UseVisualStyleBackColor = true;
@@ -71,15 +78,23 @@
             Grid_musicas.AllowUserToDeleteRows = false;
             dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
             dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
             dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
             dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
             dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
             Grid_musicas.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             Grid_musicas.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            Grid_musicas.Columns.AddRange(new DataGridViewColumn[] { ID, Titulo, linkorId_video, Tempo });
-            Grid_musicas.Location = new Point(12, 121);
+            Grid_musicas.Columns.AddRange(new DataGridViewColumn[] { ID, Titulo, linkorId_video, Tempo, id_playlist, baixada });
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Window;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 11F);
+            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            Grid_musicas.DefaultCellStyle = dataGridViewCellStyle2;
+            Grid_musicas.Location = new Point(12, 78);
             Grid_musicas.MultiSelect = false;
             Grid_musicas.Name = "Grid_musicas";
             Grid_musicas.ReadOnly = true;
@@ -89,17 +104,18 @@
             // 
             // ID
             // 
+            ID.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
             ID.HeaderText = "ID";
             ID.Name = "ID";
             ID.ReadOnly = true;
-            ID.Width = 40;
+            ID.Width = 50;
             // 
             // Titulo
             // 
+            Titulo.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             Titulo.HeaderText = "Título Música";
             Titulo.Name = "Titulo";
             Titulo.ReadOnly = true;
-            Titulo.Width = 550;
             // 
             // linkorId_video
             // 
@@ -110,14 +126,29 @@
             // 
             // Tempo
             // 
+            Tempo.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
             Tempo.HeaderText = "Tempo";
             Tempo.Name = "Tempo";
             Tempo.ReadOnly = true;
-            Tempo.Width = 160;
+            Tempo.Width = 82;
+            // 
+            // id_playlist
+            // 
+            id_playlist.HeaderText = "id_playlist";
+            id_playlist.Name = "id_playlist";
+            id_playlist.ReadOnly = true;
+            id_playlist.Visible = false;
+            // 
+            // baixada
+            // 
+            baixada.HeaderText = "baixada";
+            baixada.Name = "baixada";
+            baixada.ReadOnly = true;
             // 
             // btn_addlist
             // 
-            btn_addlist.Location = new Point(12, 67);
+            btn_addlist.Font = new Font("Segoe UI", 11F);
+            btn_addlist.Location = new Point(12, 37);
             btn_addlist.Name = "btn_addlist";
             btn_addlist.Size = new Size(419, 35);
             btn_addlist.TabIndex = 3;
@@ -127,7 +158,8 @@
             // 
             // btn_excluir
             // 
-            btn_excluir.Location = new Point(437, 67);
+            btn_excluir.Font = new Font("Segoe UI", 11F);
+            btn_excluir.Location = new Point(437, 37);
             btn_excluir.Name = "btn_excluir";
             btn_excluir.Size = new Size(368, 35);
             btn_excluir.TabIndex = 4;
@@ -137,7 +169,7 @@
             // 
             // Pbar
             // 
-            Pbar.Location = new Point(12, 461);
+            Pbar.Location = new Point(9, 418);
             Pbar.Name = "Pbar";
             Pbar.Size = new Size(793, 23);
             Pbar.TabIndex = 5;
@@ -145,60 +177,75 @@
             // cbx_playlist
             // 
             cbx_playlist.AutoSize = true;
-            cbx_playlist.Location = new Point(675, 4);
+            cbx_playlist.Font = new Font("Segoe UI", 11F);
+            cbx_playlist.Location = new Point(658, 4);
             cbx_playlist.Name = "cbx_playlist";
-            cbx_playlist.Size = new Size(127, 19);
+            cbx_playlist.Size = new Size(154, 24);
             cbx_playlist.TabIndex = 6;
             cbx_playlist.Text = "Playlist do Youtube";
             cbx_playlist.UseVisualStyleBackColor = true;
             // 
-            // cbx_host
-            // 
-            cbx_host.FormattingEnabled = true;
-            cbx_host.Items.AddRange(new object[] { "1 - youtube-mp3-downloader2.p.rapidapi.com", "2 - youtube-mp3-downloader1.p.rapidapi.com" });
-            cbx_host.Location = new Point(469, 33);
-            cbx_host.Name = "cbx_host";
-            cbx_host.Size = new Size(200, 23);
-            cbx_host.TabIndex = 7;
-            // 
-            // cbx_chave
-            // 
-            cbx_chave.FormattingEnabled = true;
-            cbx_chave.Items.AddRange(new object[] { "1 - 1a0890980fmsh42c4db24ee5c99dp187015jsned15423ee5e2", "2 - 753851eb6dmsh0048fc19d4dbf58p1e9208jsnef0b7965d6f6", "3 - 4f84ec793amshcca1ecf872ad7f4p184291jsn3d3ee1b0cb1d" });
-            cbx_chave.Location = new Point(82, 33);
-            cbx_chave.Name = "cbx_chave";
-            cbx_chave.Size = new Size(200, 23);
-            cbx_chave.TabIndex = 8;
-            // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(12, 41);
+            label1.Font = new Font("Segoe UI", 11F);
+            label1.Location = new Point(9, 447);
             label1.Name = "label1";
-            label1.RightToLeft = RightToLeft.No;
-            label1.Size = new Size(64, 15);
-            label1.TabIndex = 9;
-            label1.Text = "Chave API:";
+            label1.Size = new Size(126, 20);
+            label1.TabIndex = 7;
+            label1.Text = "Total de músicas: ";
+            // 
+            // lbl_total
+            // 
+            lbl_total.AutoSize = true;
+            lbl_total.Font = new Font("Segoe UI", 11F);
+            lbl_total.Location = new Point(132, 447);
+            lbl_total.Name = "lbl_total";
+            lbl_total.Size = new Size(17, 20);
+            lbl_total.TabIndex = 8;
+            lbl_total.Text = "0";
             // 
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(407, 41);
+            label2.Font = new Font("Segoe UI", 11F);
+            label2.Location = new Point(9, 467);
             label2.Name = "label2";
-            label2.RightToLeft = RightToLeft.No;
-            label2.Size = new Size(56, 15);
-            label2.TabIndex = 10;
-            label2.Text = "Host API:";
+            label2.Size = new Size(189, 20);
+            label2.TabIndex = 9;
+            label2.Text = "Total de músicas baixadas: ";
+            // 
+            // lbl_baixadas
+            // 
+            lbl_baixadas.AutoSize = true;
+            lbl_baixadas.Font = new Font("Segoe UI", 11F);
+            lbl_baixadas.Location = new Point(195, 467);
+            lbl_baixadas.Name = "lbl_baixadas";
+            lbl_baixadas.Size = new Size(17, 20);
+            lbl_baixadas.TabIndex = 10;
+            lbl_baixadas.Text = "0";
+            // 
+            // btn_limpar
+            // 
+            btn_limpar.Font = new Font("Segoe UI", 11F);
+            btn_limpar.Location = new Point(300, 447);
+            btn_limpar.Name = "btn_limpar";
+            btn_limpar.Size = new Size(131, 38);
+            btn_limpar.TabIndex = 11;
+            btn_limpar.Text = "Limpar lista";
+            btn_limpar.UseVisualStyleBackColor = true;
+            btn_limpar.Click += btn_limpar_Click;
             // 
             // Fo_Principal
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(814, 541);
+            ClientSize = new Size(814, 494);
+            Controls.Add(btn_limpar);
+            Controls.Add(lbl_baixadas);
             Controls.Add(label2);
+            Controls.Add(lbl_total);
             Controls.Add(label1);
-            Controls.Add(cbx_chave);
-            Controls.Add(cbx_host);
             Controls.Add(cbx_playlist);
             Controls.Add(Pbar);
             Controls.Add(btn_excluir);
@@ -226,13 +273,16 @@
         private Button btn_excluir;
         private ProgressBar Pbar;
         private CheckBox cbx_playlist;
-        private ComboBox cbx_host;
-        private ComboBox cbx_chave;
         private Label label1;
+        private Label lbl_total;
         private Label label2;
+        private Label lbl_baixadas;
         private DataGridViewTextBoxColumn ID;
         private DataGridViewTextBoxColumn Titulo;
         private DataGridViewTextBoxColumn linkorId_video;
         private DataGridViewTextBoxColumn Tempo;
+        private DataGridViewTextBoxColumn id_playlist;
+        private DataGridViewCheckBoxColumn baixada;
+        private Button btn_limpar;
     }
 }
