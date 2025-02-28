@@ -34,12 +34,6 @@
             txt_link = new TextBox();
             btn_download = new Button();
             Grid_musicas = new DataGridView();
-            ID = new DataGridViewTextBoxColumn();
-            Titulo = new DataGridViewTextBoxColumn();
-            linkorId_video = new DataGridViewTextBoxColumn();
-            Tempo = new DataGridViewTextBoxColumn();
-            id_playlist = new DataGridViewTextBoxColumn();
-            baixada = new DataGridViewCheckBoxColumn();
             btn_addlist = new Button();
             btn_excluir = new Button();
             Pbar = new ProgressBar();
@@ -49,6 +43,12 @@
             label2 = new Label();
             lbl_baixadas = new Label();
             btn_limpar = new Button();
+            ID = new DataGridViewTextBoxColumn();
+            Titulo = new DataGridViewTextBoxColumn();
+            linkorId_video = new DataGridViewTextBoxColumn();
+            Tempo = new DataGridViewTextBoxColumn();
+            id_playlist = new DataGridViewTextBoxColumn();
+            baixada = new DataGridViewCheckBoxColumn();
             ((System.ComponentModel.ISupportInitialize)Grid_musicas).BeginInit();
             SuspendLayout();
             // 
@@ -101,49 +101,6 @@
             Grid_musicas.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             Grid_musicas.Size = new Size(793, 334);
             Grid_musicas.TabIndex = 2;
-            // 
-            // ID
-            // 
-            ID.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
-            ID.HeaderText = "ID";
-            ID.Name = "ID";
-            ID.ReadOnly = true;
-            ID.Width = 50;
-            // 
-            // Titulo
-            // 
-            Titulo.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Titulo.HeaderText = "Título Música";
-            Titulo.Name = "Titulo";
-            Titulo.ReadOnly = true;
-            // 
-            // linkorId_video
-            // 
-            linkorId_video.HeaderText = "id_video";
-            linkorId_video.Name = "linkorId_video";
-            linkorId_video.ReadOnly = true;
-            linkorId_video.Visible = false;
-            // 
-            // Tempo
-            // 
-            Tempo.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
-            Tempo.HeaderText = "Tempo";
-            Tempo.Name = "Tempo";
-            Tempo.ReadOnly = true;
-            Tempo.Width = 82;
-            // 
-            // id_playlist
-            // 
-            id_playlist.HeaderText = "id_playlist";
-            id_playlist.Name = "id_playlist";
-            id_playlist.ReadOnly = true;
-            id_playlist.Visible = false;
-            // 
-            // baixada
-            // 
-            baixada.HeaderText = "baixada";
-            baixada.Name = "baixada";
-            baixada.ReadOnly = true;
             // 
             // btn_addlist
             // 
@@ -236,6 +193,49 @@
             btn_limpar.UseVisualStyleBackColor = true;
             btn_limpar.Click += btn_limpar_Click;
             // 
+            // ID
+            // 
+            ID.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+            ID.HeaderText = "ID";
+            ID.Name = "ID";
+            ID.ReadOnly = true;
+            ID.Width = 50;
+            // 
+            // Titulo
+            // 
+            Titulo.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            Titulo.HeaderText = "Título Música";
+            Titulo.Name = "Titulo";
+            Titulo.ReadOnly = true;
+            // 
+            // linkorId_video
+            // 
+            linkorId_video.HeaderText = "id_video";
+            linkorId_video.Name = "linkorId_video";
+            linkorId_video.ReadOnly = true;
+            linkorId_video.Visible = false;
+            // 
+            // Tempo
+            // 
+            Tempo.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+            Tempo.HeaderText = "Tempo";
+            Tempo.Name = "Tempo";
+            Tempo.ReadOnly = true;
+            Tempo.Width = 82;
+            // 
+            // id_playlist
+            // 
+            id_playlist.HeaderText = "id_playlist";
+            id_playlist.Name = "id_playlist";
+            id_playlist.ReadOnly = true;
+            id_playlist.Visible = false;
+            // 
+            // baixada
+            // 
+            baixada.HeaderText = "Baixada";
+            baixada.Name = "baixada";
+            baixada.ReadOnly = true;
+            // 
             // Fo_Principal
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -277,12 +277,12 @@
         private Label lbl_total;
         private Label label2;
         private Label lbl_baixadas;
+        private Button btn_limpar;
         private DataGridViewTextBoxColumn ID;
         private DataGridViewTextBoxColumn Titulo;
         private DataGridViewTextBoxColumn linkorId_video;
         private DataGridViewTextBoxColumn Tempo;
         private DataGridViewTextBoxColumn id_playlist;
         private DataGridViewCheckBoxColumn baixada;
-        private Button btn_limpar;
     }
 }

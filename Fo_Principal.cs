@@ -1,7 +1,5 @@
-﻿using System.Globalization;
-using System.Text;
+﻿using System.Text;
 using YoutubeExplode;
-using YoutubeExplode.Playlists;
 using YoutubeExplode.Videos.Streams;
 
 namespace Youtube.Video.Downloader
@@ -45,8 +43,6 @@ namespace Youtube.Video.Downloader
                 MessageBox.Show("Lista de musicas para download vazia!", "AVISO", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-            int totalMusicas = Grid_musicas.Rows.Count;
-            int musicasBaixadas = 0;
             foreach (DataGridViewRow item in Grid_musicas.Rows)
             {
                 var nome = item.Cells[1].Value.ToString();
@@ -85,6 +81,7 @@ namespace Youtube.Video.Downloader
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Erro: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    i--;
                     if (ex.Message.Contains("429"))
                     {
                         MessageBox.Show("Erro 429 - Limite de requisições atingido!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -101,23 +98,19 @@ namespace Youtube.Video.Downloader
                     }
                 }
             }
-            if (Grid_musicas.Rows.Count == 0)
-            {
-                MessageBox.Show("Playlist já baixada!", "Aviso!", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
-            {
-                MessageBox.Show("Download Finalizado com sucesso!", "Sucesso!", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
+            MessageBox.Show("Download Finalizado com sucesso!", "Sucesso!", MessageBoxButtons.OK, MessageBoxIcon.Information);
             Grid_musicas.Rows.Clear();
             Pbar.Value = 0;
             i = 0;
             musicasBaixadas = 0;
+            lbl_total.Text = Convert.ToString(i);
+            lbl_baixadas.Text = Convert.ToString(musicasBaixadas);
         }
         private async void btn_addlist_Click(object sender, EventArgs e)
         {
             string diretoriodownload = Application.StartupPath + @"Musicas\";
             string link = txt_link.Text;
+            i = 1;
             if (txt_link.Text == "")
             {
                 MessageBox.Show("Informe um link para poder incluir na lista!", "AVISO", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
@@ -152,7 +145,7 @@ namespace Youtube.Video.Downloader
                         i++;
                         txt_link.Text = null;
                         cbx_playlist.Checked = false;
-                        lbl_total.Text = Convert.ToString(i);
+                        lbl_total.Text = Convert.ToString(i - 1);
                     }
                     if (Grid_musicas.Rows.Count == 0)
                     {
@@ -225,9 +218,16 @@ namespace Youtube.Video.Downloader
         }
         private void AtualizarBarraDeProgresso(int valor)
         {
-            if (valor <= Pbar.Maximum)
+            if (InvokeRequired)
             {
-                Pbar.Value = valor;
+                Invoke(new Action<int>(AtualizarBarraDeProgresso), valor);
+            }
+            else
+            {
+                if (valor <= Pbar.Maximum)
+                {
+                    Pbar.Value = valor;
+                }
             }
         }
         private void txt_link_TextChanged(object sender, EventArgs e)
@@ -242,7 +242,6 @@ namespace Youtube.Video.Downloader
                 cbx_playlist.Checked = true;
             }
         }
-
         private void btn_limpar_Click(object sender, EventArgs e)
         {
             Grid_musicas.Rows.Clear();
