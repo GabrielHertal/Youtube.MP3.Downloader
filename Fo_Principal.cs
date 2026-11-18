@@ -12,6 +12,7 @@ namespace Youtube.Video.Downloader
         }
         int musicasBaixadas = 0;
         int i = 1;
+        bool downloading = false;
         private string LimparNomeParaArquivo(string nome)
         {
             nome = nome.Normalize(NormalizationForm.FormC);
@@ -45,6 +46,7 @@ namespace Youtube.Video.Downloader
             }
             foreach (DataGridViewRow item in Grid_musicas.Rows)
             {
+                downloading = true;
                 var nome = item.Cells[1].Value.ToString();
                 var _id_video = item.Cells[2].Value.ToString();
                 string link = "https://www.youtube.com/watch?v=" + _id_video;
@@ -63,9 +65,9 @@ namespace Youtube.Video.Downloader
                         AtualizarBarraDeProgresso(musicasBaixadas);
                         continue;
                     }
-                    var infovideo = manifestvideo.GetAudioOnlyStreams().GetWithHighestBitrate();
+                    var infovideo = manifestvideo.GetAudioOnlyStreams().TryGetWithHighestBitrate();
                     var localarquivo = Path.Combine(Path.GetTempPath(), $"{nomemusic}.mp3");
-                    await youtube.Videos.Streams.DownloadAsync(infovideo, localarquivo);
+                    await youtube.Videos.Streams.DownloadAsync(infovideo!, localarquivo).ConfigureAwait(true);
                     var arquivomp3 = Path.Combine(Path.GetTempPath(), $"{nomemusic}.mp3");
                     if (!Directory.Exists("Musicas"))
                     {
@@ -85,6 +87,7 @@ namespace Youtube.Video.Downloader
                     if (ex.Message.Contains("429"))
                     {
                         MessageBox.Show("Erro 429 - Limite de requisições atingido!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        downloading = false;
                         return;
                     }
                     var result = MessageBox.Show("Deseja continuar?", "Erro", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -100,11 +103,13 @@ namespace Youtube.Video.Downloader
             }
             MessageBox.Show("Download Finalizado com sucesso!", "Sucesso!", MessageBoxButtons.OK, MessageBoxIcon.Information);
             Grid_musicas.Rows.Clear();
+            Pbar.Maximum = 0;
             Pbar.Value = 0;
             i = 0;
             musicasBaixadas = 0;
             lbl_total.Text = Convert.ToString(i);
             lbl_baixadas.Text = Convert.ToString(musicasBaixadas);
+            downloading = false;
         }
         private async void btn_addlist_Click(object sender, EventArgs e)
         {
@@ -161,8 +166,12 @@ namespace Youtube.Video.Downloader
                     Console.WriteLine($"Erro na requisição: {ex.Message}");
                     return;
                 }
+                finally
+                {   
+                    Pbar.Maximum = Convert.ToInt32(lbl_total.Text);
+                }
             }
-            #endregion
+            #endregion  
             else
             #region 2- Caso não seja uma playlist
             {
@@ -171,7 +180,7 @@ namespace Youtube.Video.Downloader
                 //obtem video youtube//
                 var video = await youtube.Videos.GetAsync(link);
                 //manifesto do video para framework
-                var manifestvideo = await youtube.Videos.Streams.GetManifestAsync(video.Id);
+                //var manifestvideo = await youtube.Videos.Streams.GetManifestAsync(video.Id);
                 string titulo = LimparNomeParaArquivo(video.Title);
                 string id_video = video.Id;
                 if (ExisteInformacaoNoGrid(id_video))
@@ -206,6 +215,11 @@ namespace Youtube.Video.Downloader
         }
         private void btn_excluir_Click(object sender, EventArgs e)
         {
+            if(downloading)
+            {
+                MessageBox.Show("Não é possível excluir músicas da lista enquanto o download estiver em andamento!", "AVISO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
             if (Grid_musicas.SelectedRows.Count > 0)
             {
                 foreach (DataGridViewRow row in Grid_musicas.SelectedRows)
@@ -244,6 +258,11 @@ namespace Youtube.Video.Downloader
         }
         private void btn_limpar_Click(object sender, EventArgs e)
         {
+            if(downloading)
+            {
+                MessageBox.Show("Não é possível limpar a lista enquanto o download estiver em andamento!", "AVISO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
             Grid_musicas.Rows.Clear();
             i = 0;
             lbl_total.Text = Convert.ToString(i);
